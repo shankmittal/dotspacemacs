@@ -13,12 +13,16 @@ values."
    dotspacemacs-distribution 'spacemacs
    ;; List of additional paths where to look for configuration layers.
    ;; Paths must have a trailing slash (i.e. `~/.mycontribs/')
-   dotspacemacs-configuration-layer-path '()
+   dotspacemacs-configuration-layer-path
+   '(
+     "~/spacemacs_layers/"
+    )
    ;; List of configuration layers to load. If it is the symbol `all' instead
    ;; of a list then all discovered layers will be installed.
    dotspacemacs-configuration-layers
    '(
      gtags
+     c-c++
      ;; ----------------------------------------------------------------
      ;; Example of useful layers you may want to use right away.
      ;; Uncomment some layer names and press <SPC f e R> (Vim style) or
@@ -27,15 +31,26 @@ values."
      ;; auto-completion
      ;; better-defaults
      emacs-lisp
-     ;; git
+     git
+     ;; themes-megapack
      ;; markdown
-     ;; org
+     org
+     ;; org-latex
+     ;; org-html5slide
+     latex
+     ;; texlive-latexextra
+     shell
      ;; (shell :variables
      ;;        shell-default-height 30
      ;;        shell-default-position 'bottom)
      ;; spell-checking
      ;; syntax-checking
      ;; version-control
+     ;; colors
+     linux-kernel
+     ;; coreboot
+     c-project
+     ;; helm-changes
      )
    ;; List of additional packages that will be installed without being
    ;; wrapped in a layer. If you need some configuration for these
@@ -96,7 +111,11 @@ values."
    ;; List of themes, the first of the list is loaded when spacemacs starts.
    ;; Press <SPC> T n to cycle to the next theme in the list (works great
    ;; with 2 themes variants, one dark and one light)
-   dotspacemacs-themes '(tango-dark
+   dotspacemacs-themes '(default
+			 wombat
+                         tango-dark
+                         solarized-dark
+                         dakrone
                          grandshell
                          alect-black
                          spacemacs-dark
@@ -110,9 +129,9 @@ values."
    dotspacemacs-colorize-cursor-according-to-state t
    ;; Default font. `powerline-scale' allows to quickly tweak the mode-line
    ;; size to make separators look not too crappy.
-   ;;dotspacemacs-default-font '("Source code pro"
-   dotspacemacs-default-font '("Courier 10 pitch"
-                               :size 15
+   ;; dotspacemacs-default-font '("Source code pro"
+   dotspacemacs-default-font '("Courier"
+                               :size 14.0
                                :weight normal
                                :width normal
                                :powerline-scale 1.1)
@@ -211,7 +230,7 @@ values."
    ;; If non nil line numbers are turned on in all `prog-mode' and `text-mode'
    ;; derivatives. If set to `relative', also turns on relative line numbers.
    ;; (default nil)
-   dotspacemacs-line-numbers nil
+   dotspacemacs-line-numbers t
    ;; If non-nil smartparens-strict-mode will be enabled in programming modes.
    ;; (default nil)
    dotspacemacs-smartparens-strict-mode nil
@@ -235,7 +254,7 @@ values."
    ;; `trailing' to delete only the whitespace at end of lines, `changed'to
    ;; delete only whitespace for changed lines or `nil' to disable cleanup.
    ;; (default nil)
-   dotspacemacs-whitespace-cleanup nil
+   dotspacemacs-whitespace-cleanup `changed
    ))
 
 (defun dotspacemacs/user-init ()
@@ -249,6 +268,13 @@ before packages are loaded. If you are unsure, you should try in setting them in
   (add-hook 'c-mode-hook (lambda () (spacemacs/helm-gtags-define-keys-for-mode 'c-mode)))
   (add-hook 'c++-mode-hook (lambda () (spacemacs/helm-gtags-define-keys-for-mode 'c-mode)))
   (add-hook 'asm-mode-hook (lambda () (spacemacs/helm-gtags-define-keys-for-mode 'c-mode)))
+  (add-hook 'c-mode-hook (lambda () (ggtags-mode 1)))
+  (add-hook 'c++-mode-hook (lambda () (ggtags-mode 1)))
+  (add-hook 'asm-mode-hook (lambda () (ggtags-mode 1)))
+  (add-hook 'java-mode-hook (lambda () (ggtags-mode 1)))
+
+  (add-to-list 'auto-mode-alist '("\\Makefile.*\\'" . makefile-mode))
+  (add-to-list 'auto-mode-alist '("\\.*.ebuild\\'" . makefile-mode))
   )
 
 (defun dotspacemacs/user-config ()
@@ -258,47 +284,56 @@ layers configuration.
 This is the place where most of your configurations should be done. Unless it is
 explicitly specified that a variable should be set before a package is loaded,
 you should place your code here."
-  ;; https://hugoheden.wordpress.com/2009/03/08/copypaste-with-emacs-in-terminal/
-  ;; I prefer using the "clipboard" selection (the one the
-  ;; typically is used by c-c/c-v) before the primary selection
-  ;; (that uses mouse-select/middle-button-click)
+  ;; ;; https://hugoheden.wordpress.com/2009/03/08/copypaste-with-emacs-in-terminal/
+  ;; ;; I prefer using the "clipboard" selection (the one the
+  ;; ;; typically is used by c-c/c-v) before the primary selection
+  ;; ;; (that uses mouse-select/middle-button-click)
   (setq x-select-enable-clipboard t)
 
-  ;; If emacs is run in a terminal, the clipboard- functions have no
-  ;; effect. Instead, we use of xsel, see
-  ;; http://www.vergenet.net/~conrad/software/xsel/ -- "a command-line
-  ;; program for getting and setting the contents of the X selection"
-  (unless window-system
-    (when (getenv "DISPLAY")
-      ;; Callback for when user cuts
-      (defun xsel-cut-function (text &optional push)
-        ;; Insert text to temp-buffer, and "send" content to xsel stdin
-        (with-temp-buffer
-          (insert text)
-          ;; I prefer using the "clipboard" selection (the one the
-          ;; typically is used by c-c/c-v) before the primary selection
-          ;; (that uses mouse-select/middle-button-click)
-          (call-process-region (point-min) (point-max) "xsel" nil 0 nil "--clipboard" "--input")))
-      ;; Call back for when user pastes
-      (defun xsel-paste-function()
-        ;; Find out what is current selection by xsel. If it is different
-        ;; from the top of the kill-ring (car kill-ring), then return
-        ;; it. Else, nil is returned, so whatever is in the top of the
-        ;; kill-ring will be used.
-        (let ((xsel-output (shell-command-to-string "xsel --clipboard --output")))
-          (unless (string= (car kill-ring) xsel-output)
-            xsel-output )))
-      ;; Attach callbacks to hooks
-      (setq interprogram-cut-function 'xsel-cut-function)
-      (setq interprogram-paste-function 'xsel-paste-function)
-      ;; Idea from
-      ;; http://shreevatsa.wordpress.com/2006/10/22/emacs-copypaste-and-x/
-      ;; http://www.mail-archive.com/help-gnu-emacs@gnu.org/msg03577.html
-      ))
+  ;; ;; If emacs is run in a terminal, the clipboard- functions have no
+  ;; ;; effect. Instead, we use of xsel, see
+  ;; ;; http://www.vergenet.net/~conrad/software/xsel/ -- "a command-line
+  ;; ;; program for getting and setting the contents of the X selection"
+  ;; (unless window-system
+  ;;   (when (getenv "DISPLAY")
+  ;;     ;; Callback for when user cu l
+  ;;     (defun xsel-cut-function (text &optional push)
+  ;;       ;; Insert text to temp-buffer, and "send" content to xsel stdin
+  ;;       (with-temp-buffer
+  ;;         (insert text)
+  ;;         ;; I prefer using the "clipboard" selection (the one the
+  ;;         ;; typically is used by c-c/c-v) before the primary selection
+  ;;         ;; (that uses mouse-select/middle-button-click)
+  ;;         (call-process-region (point-min) (point-max) "xsel" nil 0 nil "--clipboard" "--input")))
+  ;;     ;; Call back for when user pastes
+  ;;     (defun xsel-paste-function()
+  ;;       ;; Find out what is current selection by xsel. If it is different
+  ;;       ;; from the top of the kill-ring (car kill-ring), then return
+  ;;       ;; it. Else, nil is returned, so whatever is in the top of the
+  ;;       ;; kill-ring will be used.
+  ;;       (let ((xsel-output (shell-command-to-string "xsel --clipboard --output")))
+  ;;         (unless (string= (car kill-ring) xsel-output)
+  ;;           xsel-output )))
+  ;;     ;; Attach callbacks to hooks
+  ;;     (setq interprogram-cut-function 'xsel-cut-function)
+  ;;     (setq interprogram-paste-function 'xsel-paste-function)
+  ;;     ;; Idea from
+  ;;     ;; http://shreevatsa.wordpress.com/2006/10/22/emacs-copypaste-and-x/
+  ;;     ;; http://www.mail-archive.com/help-gnu-emacs@gnu.org/msg03577.html
+  ;;     ))
 
+  (global-hl-line-mode -1) ; Disable current line highlight
+  (define-globalized-minor-mode global-fci-mode fci-mode (lambda () (fci-mode 1)))
+  (global-fci-mode 1)
   ;; Show line numbers
-  (global-linum-mode 1)
+  ;; (global-linum-mode 1)
   (setq linum-format "%d ")
+
+  ;; wombat sets a foreground color for the `region' face, so we need to
+  ;; make it unspecified so that foreground colors don't get wiped out
+  (set-face-attribute 'region nil :background "MediumPurple4" :foreground 'unspecified)
+  (set-cursor-color "#ff8844")
+  (blink-cursor-mode 0)
 
   ;; set C-x b
   ;; (ido-mode 1)
@@ -318,17 +353,20 @@ you should place your code here."
                 (define-key evil-normal-state-map ";" 'evil-ex)
                 )))
 
+
   ;; key bindings
   (eval-after-load "helm-gtags"
     '(progn
        (define-key evil-normal-state-map (kbd "\C-]") 'helm-gtags-find-tag)
-       (define-key evil-normal-state-map (kbd "\M-]") 'helm-gtags-dwim-other-window)
+       (define-key evil-motion-state-map (kbd "\C-]") 'helm-gtags-find-tag)
+       ;;(define-key evil-motion-state-map (kbd "SPC-]") 'helm-gtags-find-tag)
        (define-key evil-normal-state-map (kbd "\C-t") 'helm-gtags-previous-history)
-       (define-key evil-normal-state-map (kbd "\M-t") 'helm-gtags-next-history)
+       (define-key evil-normal-state-map (kbd "\C-y") 'helm-gtags-next-history)
+       ;;(define-key evil-normal-state-map (kbd "SPC-[") 'helm-gtags-dwim-other-window)
+       ;;(define-key ggtags-mode-map (kbd "\M-]") 'helm-gtags-dwim-other-window)
        (define-key evil-normal-state-map (kbd "\C-\\") 'helm-gtags-find-rtag)
        (define-key helm-gtags-mode-map (kbd "M-s") 'helm-gtags-find-symbol)
        (define-key helm-gtags-mode-map (kbd "M-,") 'helm-gtags-pop-stack)))
-  (setq tab-width 8)
   ;;(setq c-basic-offset 2)
   ;;(setq indent-tabs-mode t)
 
@@ -338,7 +376,229 @@ you should place your code here."
   (global-set-key (kbd "DEL") 'backward-delete-char)
   (setq c-backspace-function 'backward-delete-char)
   (setq show-trailing-whitespace t)
+
+  (setq frame-title-format "Emacs")
+
+  ;; Show the current function name in the header line
+  (which-function-mode)
+  (setq which-func-unknown "-")
+  (set-face-attribute 'which-func nil
+                      :foreground "deep sky blue")
+  (setq-default header-line-format
+                '((which-func-mode ("" which-func-format " "))))
+  (setq  mode-line-misc-info
+         ;; We remove Which Function Mode from the mode line, because it's mostly
+         ;; invisble here anyways.
+         (assq-delete-all 'which-func-mode mode-line-misc-info))
+
+  ;; Powerline setting
+  (setq powerline-default-separator 'nil)
+  (setq spaceline-which-function-p 'nil)
+  ;; This should be always at the end of all powerline settings
+  (spaceline-compile)
+
+  ;; Show helm input in the bottom
+  (setq helm-echo-input-in-header-line 'nil)
+
+  (set-face-attribute 'default nil :family "Courier")
+  (set-face-attribute 'default nil :height 140)
+  ;;
+
+  ;; hack to fix initial font issue
+  ;; (add-hook 'focus-in-hook #'reset-default-font)
+
+  ;; (defmacro with-face (str &rest properties)
+  ;;   `(propertize ,str 'face (list ,@properties)))
+
+  ;; (defun sl/make-header ()
+  ;;   ""
+  ;;   (let* ((sl/full-header (abbreviate-file-name buffer-file-name))
+  ;;          (sl/header (file-name-directory sl/full-header))
+  ;;          (sl/drop-str "[...]"))
+  ;;     (if (> (length sl/full-header)
+  ;;            (window-body-width))
+  ;;         (if (> (length sl/header)
+  ;;                (window-body-width))
+  ;;             (progn
+  ;;               (concat (with-face sl/drop-str
+  ;;                                  :background "blue"
+  ;;                                  :weight 'bold
+  ;;                                  )
+  ;;                       (with-face (substring sl/header
+  ;;                                             (+ (- (length sl/header)
+  ;;                                                   (window-body-width))
+  ;;                                                (length sl/drop-str))
+  ;;                                             (length sl/header))
+  ;;                                  ;; :background "red"
+  ;;                                  :weight 'bold
+  ;;                                  )))
+  ;;           (concat (with-face sl/header
+  ;;                              ;; :background "red"
+  ;;                              :foreground "#8fb28f"
+  ;;                              :weight 'bold
+  ;;                              )))
+  ;;       (concat (with-face sl/header
+  ;;                          ;; :background "green"
+  ;;                          ;; :foreground "black"
+  ;;                          :weight 'bold
+  ;;                          :foreground "#8fb28f"
+  ;;                          )
+  ;;               (with-face (file-name-nondirectory buffer-file-name)
+  ;;                          :weight 'bold
+  ;;                          ;; :background "red"
+  ;;                          )))))
+
+  ;; (defun sl/display-header ()
+  ;;   (setq header-line-format
+  ;;         '("" ;; invocation-name
+  ;;           (:eval (if (buffer-file-name)
+  ;;                      (sl/make-header)
+  ;;                    "%b")))))
+
+  ;; (add-hook 'buffer-list-update-hook
+  ;;           'sl/display-header)
+
+  ;; use real tabs and 8 width long
+  ;; (setq-default indent-tabs-mode t)
+  ;; (setq-default tab-width 8)
   )
 
 ;; Do not write anything past this comment. This is where Emacs will
 ;; auto-generate custom variable definitions.
+(custom-set-variables
+ ;; custom-set-variables was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ '(ansi-color-faces-vector
+   [default bold shadow italic underline bold bold-italic bold])
+ '(compilation-message-face (quote default))
+ '(cua-global-mark-cursor-color "#2aa198")
+ '(cua-normal-cursor-color "#657b83")
+ '(cua-overwrite-cursor-color "#b58900")
+ '(cua-read-only-cursor-color "#859900")
+ '(diary-entry-marker (quote font-lock-variable-name-face))
+ '(emms-mode-line-icon-image-cache
+   (quote
+    (image :type xpm :ascent center :data "/* XPM */
+static char *note[] = {
+/* width height num_colors chars_per_pixel */
+\"    10   11        2            1\",
+/* colors */
+\". c #1ba1a1\",
+\"# c None s None\",
+/* pixels */
+\"###...####\",
+\"###.#...##\",
+\"###.###...\",
+\"###.#####.\",
+\"###.#####.\",
+\"#...#####.\",
+\"....#####.\",
+\"#..######.\",
+\"#######...\",
+\"######....\",
+\"#######..#\" };")))
+ '(evil-want-fine-undo t)
+ '(fci-rule-color "#eee8d5")
+ '(gnus-logo-colors (quote ("#4c8383" "#bababa")) t)
+ '(gnus-mode-line-image-cache
+   (quote
+    (image :type xpm :ascent center :data "/* XPM */
+static char *gnus-pointer[] = {
+/* width height num_colors chars_per_pixel */
+\"    18    13        2            1\",
+/* colors */
+\". c #1ba1a1\",
+\"# c None s None\",
+/* pixels */
+\"##################\",
+\"######..##..######\",
+\"#####........#####\",
+\"#.##.##..##...####\",
+\"#...####.###...##.\",
+\"#..###.######.....\",
+\"#####.########...#\",
+\"###########.######\",
+\"####.###.#..######\",
+\"######..###.######\",
+\"###....####.######\",
+\"###..######.######\",
+\"###########.######\" };")) t)
+ '(highlight-changes-colors (quote ("#d33682" "#6c71c4")))
+ '(highlight-symbol-colors
+   (--map
+    (solarized-color-blend it "#fdf6e3" 0.25)
+    (quote
+     ("#b58900" "#2aa198" "#dc322f" "#6c71c4" "#859900" "#cb4b16" "#268bd2"))))
+ '(highlight-symbol-foreground-color "#586e75")
+ '(highlight-tail-colors
+   (quote
+    (("#eee8d5" . 0)
+     ("#B4C342" . 20)
+     ("#69CABF" . 30)
+     ("#69B7F0" . 50)
+     ("#DEB542" . 60)
+     ("#F2804F" . 70)
+     ("#F771AC" . 85)
+     ("#eee8d5" . 100))))
+ '(hl-bg-colors
+   (quote
+    ("#DEB542" "#F2804F" "#FF6E64" "#F771AC" "#9EA0E5" "#69B7F0" "#69CABF" "#B4C342")))
+ '(hl-fg-colors
+   (quote
+    ("#fdf6e3" "#fdf6e3" "#fdf6e3" "#fdf6e3" "#fdf6e3" "#fdf6e3" "#fdf6e3" "#fdf6e3")))
+ '(magit-diff-use-overlays nil)
+ '(mouse-yank-at-point t)
+ '(nrepl-message-colors
+   (quote
+    ("#dc322f" "#cb4b16" "#b58900" "#546E00" "#B4C342" "#00629D" "#2aa198" "#d33682" "#6c71c4")))
+ '(org-export-backends
+   (quote
+    (ascii beamer html icalendar latex md org texinfo confluence)))
+ '(package-selected-packages
+   (quote
+    (org-dotemacs org-tree-slide ox-html5slide org-beautify-theme auctex toc-org org-repo-todo org-present org-pomodoro alert log4e gntp org-plus-contrib org-bullets htmlize gnuplot auto-dictionary helm-flyspell helm-company helm-c-yasnippet git-gutter-fringe+ git-gutter-fringe fringe-helper git-gutter+ git-gutter company-statistics rainbow-mode rainbow-identifiers xterm-color shell-pop multi-term eshell-prompt-extras esh-help smeargle orgit magit-gitflow helm-gitignore request gitignore-mode gitconfig-mode gitattributes-mode git-timemachine git-messenger evil-magit magit magit-popup git-commit with-editor zonokai-theme zenburn-theme zen-and-art-theme ws-butler window-numbering which-key volatile-highlights vi-tilde-fringe use-package underwater-theme ujelly-theme twilight-theme twilight-bright-theme twilight-anti-bright-theme tronesque-theme toxi-theme tao-theme tangotango-theme tango-plus-theme tango-2-theme sunny-day-theme sublime-themes subatomic256-theme subatomic-theme stekene-theme spacemacs-theme spaceline spacegray-theme soothe-theme solarized-theme soft-stone-theme soft-morning-theme soft-charcoal-theme smyx-theme smooth-scrolling seti-theme reverse-theme restart-emacs rainbow-delimiters railscasts-theme quelpa purple-haze-theme professional-theme popwin planet-theme phoenix-dark-pink-theme phoenix-dark-mono-theme persp-mode pcre2el pastels-on-dark-theme paradox page-break-lines organic-green-theme open-junk-file omtose-phellack-theme oldlace-theme occidental-theme obsidian-theme noctilux-theme niflheim-theme neotree naquadah-theme mustang-theme move-text monokai-theme monochrome-theme molokai-theme moe-theme minimal-theme material-theme majapahit-theme macrostep lush-theme lorem-ipsum linum-relative light-soap-theme leuven-theme jbeans-theme jazz-theme ir-black-theme inkpot-theme info+ indent-guide ido-vertical-mode hungry-delete hl-todo highlight-parentheses highlight-numbers highlight-indentation heroku-theme hemisu-theme help-fns+ helm-themes helm-swoop helm-projectile helm-mode-manager helm-make helm-gtags helm-flx helm-descbinds helm-ag hc-zenburn-theme gruvbox-theme gruber-darker-theme grandshell-theme gotham-theme google-translate golden-ratio ggtags gandalf-theme flx-ido flatui-theme flatland-theme firebelly-theme fill-column-indicator farmhouse-theme fancy-battery expand-region exec-path-from-shell evil-visualstar evil-tutor evil-surround evil-search-highlight-persist evil-numbers evil-nerd-commenter evil-mc evil-matchit evil-lisp-state evil-indent-plus evil-iedit-state evil-exchange evil-escape evil-args evil-anzu eval-sexp-fu espresso-theme elisp-slime-nav dts-mode dracula-theme django-theme disaster define-word darktooth-theme darkmine-theme darkburn-theme dakrone-theme cyberpunk-theme colorsarenice-theme color-theme-sanityinc-tomorrow color-theme-sanityinc-solarized cmake-mode clues-theme clean-aindent-mode clang-format cherry-blossom-theme busybee-theme buffer-move bubbleberry-theme bracketed-paste birds-of-paradise-plus-theme badwolf-theme auto-highlight-symbol auto-compile apropospriate-theme anti-zenburn-theme ample-zen-theme ample-theme alect-themes aggressive-indent afternoon-theme adaptive-wrap ace-window ace-link ace-jump-helm-line)))
+ '(pos-tip-background-color "#eee8d5")
+ '(pos-tip-foreground-color "#586e75")
+ '(projectile-enable-caching t)
+ '(smartrep-mode-line-active-bg (solarized-color-blend "#859900" "#eee8d5" 0.2))
+ '(term-default-bg-color "#fdf6e3")
+ '(term-default-fg-color "#657b83")
+ '(vc-annotate-background nil)
+ '(vc-annotate-color-map
+   (quote
+    ((20 . "#dc322f")
+     (40 . "#c85d17")
+     (60 . "#be730b")
+     (80 . "#b58900")
+     (100 . "#a58e00")
+     (120 . "#9d9100")
+     (140 . "#959300")
+     (160 . "#8d9600")
+     (180 . "#859900")
+     (200 . "#669b32")
+     (220 . "#579d4c")
+     (240 . "#489e65")
+     (260 . "#399f7e")
+     (280 . "#2aa198")
+     (300 . "#2898af")
+     (320 . "#2793ba")
+     (340 . "#268fc6")
+     (360 . "#268bd2"))))
+ '(vc-annotate-very-old-color nil)
+ '(weechat-color-list
+   (quote
+    (unspecified "#fdf6e3" "#eee8d5" "#990A1B" "#dc322f" "#546E00" "#859900" "#7B6000" "#b58900" "#00629D" "#268bd2" "#93115C" "#d33682" "#00736F" "#2aa198" "#657b83" "#839496")))
+ '(xterm-color-names
+   ["#eee8d5" "#dc322f" "#859900" "#b58900" "#268bd2" "#d33682" "#2aa198" "#073642"])
+ '(xterm-color-names-bright
+   ["#fdf6e3" "#cb4b16" "#93a1a1" "#839496" "#657b83" "#6c71c4" "#586e75" "#002b36"]))
+(custom-set-faces
+ ;; custom-set-faces was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ '(default ((t (:background nil))))
+ '(company-tooltip-common ((t (:inherit company-tooltip :weight bold :underline nil))))
+ '(company-tooltip-common-selection ((t (:inherit company-tooltip-selection :weight bold :underline nil)))))
