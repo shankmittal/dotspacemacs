@@ -49,8 +49,8 @@ values."
      ;; colors
      linux-kernel
      ;; coreboot
-     c-project
-     ;; helm-changes
+     ;; c-project
+     helm-changes
      )
    ;; List of additional packages that will be installed without being
    ;; wrapped in a layer. If you need some configuration for these
@@ -130,8 +130,8 @@ values."
    ;; Default font. `powerline-scale' allows to quickly tweak the mode-line
    ;; size to make separators look not too crappy.
    ;; dotspacemacs-default-font '("Source code pro"
-   dotspacemacs-default-font '("Courier"
-                               :size 14.0
+   dotspacemacs-default-font '("Courier 10 Pitch"
+                               :size 13.0
                                :weight normal
                                :width normal
                                :powerline-scale 1.1)
@@ -362,13 +362,19 @@ you should place your code here."
        ;;(define-key evil-motion-state-map (kbd "SPC-]") 'helm-gtags-find-tag)
        (define-key evil-normal-state-map (kbd "\C-t") 'helm-gtags-previous-history)
        (define-key evil-normal-state-map (kbd "\C-y") 'helm-gtags-next-history)
-       ;;(define-key evil-normal-state-map (kbd "SPC-[") 'helm-gtags-dwim-other-window)
+       (define-key evil-normal-state-map (kbd "\C-M-]") 'helm-gtags-dwim-other-window)
        ;;(define-key ggtags-mode-map (kbd "\M-]") 'helm-gtags-dwim-other-window)
        (define-key evil-normal-state-map (kbd "\C-\\") 'helm-gtags-find-rtag)
        (define-key helm-gtags-mode-map (kbd "M-s") 'helm-gtags-find-symbol)
        (define-key helm-gtags-mode-map (kbd "M-,") 'helm-gtags-pop-stack)))
   ;;(setq c-basic-offset 2)
   ;;(setq indent-tabs-mode t)
+
+  (eval-after-load "projectile"
+    '(progn
+       (message "This is projectile mode")
+       (setq projectile-completion-system 'helm)
+       (setq helm-projectile-fuzzy-match nil)))
 
   (eval-after-load "cc-mode"
     '(define-key c-mode-map (kbd "TAB") 'self-insert-command))
@@ -400,8 +406,8 @@ you should place your code here."
   ;; Show helm input in the bottom
   (setq helm-echo-input-in-header-line 'nil)
 
-  (set-face-attribute 'default nil :family "Courier")
-  (set-face-attribute 'default nil :height 140)
+  (set-face-attribute 'default nil :family "Courier 10 Pitch")
+  (set-face-attribute 'default nil :height 130)
   ;;
 
   ;; hack to fix initial font issue
@@ -525,6 +531,7 @@ static char *gnus-pointer[] = {
 \"###....####.######\",
 \"###..######.######\",
 \"###########.######\" };")) t)
+ '(helm-projectile-fuzzy-match nil)
  '(highlight-changes-colors (quote ("#d33682" "#6c71c4")))
  '(highlight-symbol-colors
    (--map
@@ -558,10 +565,10 @@ static char *gnus-pointer[] = {
     (ascii beamer html icalendar latex md org texinfo confluence)))
  '(package-selected-packages
    (quote
-    (org-dotemacs org-tree-slide ox-html5slide org-beautify-theme auctex toc-org org-repo-todo org-present org-pomodoro alert log4e gntp org-plus-contrib org-bullets htmlize gnuplot auto-dictionary helm-flyspell helm-company helm-c-yasnippet git-gutter-fringe+ git-gutter-fringe fringe-helper git-gutter+ git-gutter company-statistics rainbow-mode rainbow-identifiers xterm-color shell-pop multi-term eshell-prompt-extras esh-help smeargle orgit magit-gitflow helm-gitignore request gitignore-mode gitconfig-mode gitattributes-mode git-timemachine git-messenger evil-magit magit magit-popup git-commit with-editor zonokai-theme zenburn-theme zen-and-art-theme ws-butler window-numbering which-key volatile-highlights vi-tilde-fringe use-package underwater-theme ujelly-theme twilight-theme twilight-bright-theme twilight-anti-bright-theme tronesque-theme toxi-theme tao-theme tangotango-theme tango-plus-theme tango-2-theme sunny-day-theme sublime-themes subatomic256-theme subatomic-theme stekene-theme spacemacs-theme spaceline spacegray-theme soothe-theme solarized-theme soft-stone-theme soft-morning-theme soft-charcoal-theme smyx-theme smooth-scrolling seti-theme reverse-theme restart-emacs rainbow-delimiters railscasts-theme quelpa purple-haze-theme professional-theme popwin planet-theme phoenix-dark-pink-theme phoenix-dark-mono-theme persp-mode pcre2el pastels-on-dark-theme paradox page-break-lines organic-green-theme open-junk-file omtose-phellack-theme oldlace-theme occidental-theme obsidian-theme noctilux-theme niflheim-theme neotree naquadah-theme mustang-theme move-text monokai-theme monochrome-theme molokai-theme moe-theme minimal-theme material-theme majapahit-theme macrostep lush-theme lorem-ipsum linum-relative light-soap-theme leuven-theme jbeans-theme jazz-theme ir-black-theme inkpot-theme info+ indent-guide ido-vertical-mode hungry-delete hl-todo highlight-parentheses highlight-numbers highlight-indentation heroku-theme hemisu-theme help-fns+ helm-themes helm-swoop helm-projectile helm-mode-manager helm-make helm-gtags helm-flx helm-descbinds helm-ag hc-zenburn-theme gruvbox-theme gruber-darker-theme grandshell-theme gotham-theme google-translate golden-ratio ggtags gandalf-theme flx-ido flatui-theme flatland-theme firebelly-theme fill-column-indicator farmhouse-theme fancy-battery expand-region exec-path-from-shell evil-visualstar evil-tutor evil-surround evil-search-highlight-persist evil-numbers evil-nerd-commenter evil-mc evil-matchit evil-lisp-state evil-indent-plus evil-iedit-state evil-exchange evil-escape evil-args evil-anzu eval-sexp-fu espresso-theme elisp-slime-nav dts-mode dracula-theme django-theme disaster define-word darktooth-theme darkmine-theme darkburn-theme dakrone-theme cyberpunk-theme colorsarenice-theme color-theme-sanityinc-tomorrow color-theme-sanityinc-solarized cmake-mode clues-theme clean-aindent-mode clang-format cherry-blossom-theme busybee-theme buffer-move bubbleberry-theme bracketed-paste birds-of-paradise-plus-theme badwolf-theme auto-highlight-symbol auto-compile apropospriate-theme anti-zenburn-theme ample-zen-theme ample-theme alect-themes aggressive-indent afternoon-theme adaptive-wrap ace-window ace-link ace-jump-helm-line)))
+    (uuidgen org-projectile org-download link-hint git-link eyebrowse evil-visual-mark-mode evil-unimpaired evil-ediff eshell-z dumb-jump f column-enforce-mode org-dotemacs org-tree-slide ox-html5slide org-beautify-theme auctex toc-org org-repo-todo org-present org-pomodoro alert log4e gntp org-plus-contrib org-bullets htmlize gnuplot auto-dictionary helm-flyspell helm-company helm-c-yasnippet git-gutter-fringe+ git-gutter-fringe fringe-helper git-gutter+ git-gutter company-statistics rainbow-mode rainbow-identifiers xterm-color shell-pop multi-term eshell-prompt-extras esh-help smeargle orgit magit-gitflow helm-gitignore request gitignore-mode gitconfig-mode gitattributes-mode git-timemachine git-messenger evil-magit magit magit-popup git-commit with-editor zonokai-theme zenburn-theme zen-and-art-theme ws-butler window-numbering which-key volatile-highlights vi-tilde-fringe use-package underwater-theme ujelly-theme twilight-theme twilight-bright-theme twilight-anti-bright-theme tronesque-theme toxi-theme tao-theme tangotango-theme tango-plus-theme tango-2-theme sunny-day-theme sublime-themes subatomic256-theme subatomic-theme stekene-theme spacemacs-theme spaceline spacegray-theme soothe-theme solarized-theme soft-stone-theme soft-morning-theme soft-charcoal-theme smyx-theme smooth-scrolling seti-theme reverse-theme restart-emacs rainbow-delimiters railscasts-theme quelpa purple-haze-theme professional-theme popwin planet-theme phoenix-dark-pink-theme phoenix-dark-mono-theme persp-mode pcre2el pastels-on-dark-theme paradox page-break-lines organic-green-theme open-junk-file omtose-phellack-theme oldlace-theme occidental-theme obsidian-theme noctilux-theme niflheim-theme neotree naquadah-theme mustang-theme move-text monokai-theme monochrome-theme molokai-theme moe-theme minimal-theme material-theme majapahit-theme macrostep lush-theme lorem-ipsum linum-relative light-soap-theme leuven-theme jbeans-theme jazz-theme ir-black-theme inkpot-theme info+ indent-guide ido-vertical-mode hungry-delete hl-todo highlight-parentheses highlight-numbers highlight-indentation heroku-theme hemisu-theme help-fns+ helm-themes helm-swoop helm-projectile helm-mode-manager helm-make helm-gtags helm-flx helm-descbinds helm-ag hc-zenburn-theme gruvbox-theme gruber-darker-theme grandshell-theme gotham-theme google-translate golden-ratio ggtags gandalf-theme flx-ido flatui-theme flatland-theme firebelly-theme fill-column-indicator farmhouse-theme fancy-battery expand-region exec-path-from-shell evil-visualstar evil-tutor evil-surround evil-search-highlight-persist evil-numbers evil-nerd-commenter evil-mc evil-matchit evil-lisp-state evil-indent-plus evil-iedit-state evil-exchange evil-escape evil-args evil-anzu eval-sexp-fu espresso-theme elisp-slime-nav dts-mode dracula-theme django-theme disaster define-word darktooth-theme darkmine-theme darkburn-theme dakrone-theme cyberpunk-theme colorsarenice-theme color-theme-sanityinc-tomorrow color-theme-sanityinc-solarized cmake-mode clues-theme clean-aindent-mode clang-format cherry-blossom-theme busybee-theme buffer-move bubbleberry-theme bracketed-paste birds-of-paradise-plus-theme badwolf-theme auto-highlight-symbol auto-compile apropospriate-theme anti-zenburn-theme ample-zen-theme ample-theme alect-themes aggressive-indent afternoon-theme adaptive-wrap ace-window ace-link ace-jump-helm-line)))
  '(pos-tip-background-color "#eee8d5")
  '(pos-tip-foreground-color "#586e75")
- '(projectile-completion-system (quote default))
+ '(projectile-completion-system (quote helm))
  '(projectile-enable-caching t)
  '(smartrep-mode-line-active-bg (solarized-color-blend "#859900" "#eee8d5" 0.2))
  '(term-default-bg-color "#fdf6e3")
