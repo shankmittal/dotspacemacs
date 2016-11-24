@@ -30,7 +30,7 @@ values."
    dotspacemacs-configuration-layer-path
    '(
      "~/spacemacs_layers/"
-    )
+     )
    ;; List of configuration layers to load.
    dotspacemacs-configuration-layers
    '(
@@ -59,6 +59,7 @@ values."
      ;; coreboot
      c-project
      helm-changes
+     helm-gtags-hook
      )
    ;; List of additional packages that will be installed without being
    ;; wrapped in a layer. If you need some configuration for these
@@ -136,14 +137,13 @@ values."
    ;; List of themes, the first of the list is loaded when spacemacs starts.
    ;; Press <SPC> T n to cycle to the next theme in the list (works great
    ;; with 2 themes variants, one dark and one light)
-   dotspacemacs-themes '(default
-                         spacemacs-dark
+   dotspacemacs-themes '(spacemacs-dark
                          spacemacs-light)
    ;; If non nil the cursor color matches the state color in GUI Emacs.
    dotspacemacs-colorize-cursor-according-to-state t
    ;; Default font, or prioritized list of fonts. `powerline-scale' allows to
    ;; quickly tweak the mode-line size to make separators look not too crappy.
-   dotspacemacs-default-font '("Courier"
+   dotspacemacs-default-font '("Courier 10 pitch"
                                :size 14.0
                                :weight normal
                                :width normal
@@ -302,15 +302,21 @@ executes.
  This function is mostly useful for variables that need to be set
 before packages are loaded. If you are unsure, you should try in setting them in
 `dotspacemacs/user-config' first."
-  (add-to-list 'load-path "~/.emacs.d/lisp")
-  (add-hook 'c-mode-hook (lambda () (spacemacs/helm-gtags-define-keys-for-mode 'c-mode)))
-  (add-hook 'c++-mode-hook (lambda () (spacemacs/helm-gtags-define-keys-for-mode 'c-mode)))
-  (add-hook 'asm-mode-hook (lambda () (spacemacs/helm-gtags-define-keys-for-mode 'c-mode)))
-  (add-hook 'c-mode-hook (lambda () (ggtags-mode 1)))
-  (add-hook 'c++-mode-hook (lambda () (ggtags-mode 1)))
-  (add-hook 'asm-mode-hook (lambda () (ggtags-mode 1)))
-  (add-hook 'java-mode-hook (lambda () (ggtags-mode 1)))
+  (if (eq system-type 'darwin)
+      (setq-default dotspacemacs-default-font '("Courier"
+                                                :size 14.0
+                                                :weight normal
+                                                :width normal
+                                                :powerline-scale 1.1))
+    (setq-default dotspacemacs-default-font '("Courier 10 pitch"
+                                              :size 14.0
+                                              :weight normal
+                                              :width normal
+                                              :powerline-scale 1.1))
+    )
+  (setq-default    dotspacemacs-themes '(default))
 
+  ;; makefile
   (add-to-list 'auto-mode-alist '("\\Makefile.*\\'" . makefile-mode))
   (add-to-list 'auto-mode-alist '("\\.*.ebuild\\'" . makefile-mode))
   )
@@ -322,20 +328,7 @@ layers configuration.
 This is the place where most of your configurations should be done. Unless it is
 explicitly specified that a variable should be set before a package is loaded,
 you should place your code here."
-  (setq linum-format "%d ")
-  ;; key bindings
-  (eval-after-load "helm-gtags"
-    '(progn
-       (define-key evil-normal-state-map (kbd "\C-]") 'helm-gtags-find-tag)
-       (define-key evil-motion-state-map (kbd "\C-]") 'helm-gtags-find-tag)
-       ;;(define-key evil-motion-state-map (kbd "SPC-]") 'helm-gtags-find-tag)
-       (define-key evil-normal-state-map (kbd "\C-t") 'helm-gtags-previous-history)
-       (define-key evil-normal-state-map (kbd "\C-y") 'helm-gtags-next-history)
-       ;;(define-key evil-normal-state-map (kbd "SPC-[") 'helm-gtags-dwim-other-window)
-       ;;(define-key ggtags-mode-map (kbd "\M-]") 'helm-gtags-dwim-other-window)
-       (define-key evil-normal-state-map (kbd "\C-\\") 'helm-gtags-find-rtag)
-       (define-key helm-gtags-mode-map (kbd "M-s") 'helm-gtags-find-symbol)
-       (define-key helm-gtags-mode-map (kbd "M-,") 'helm-gtags-pop-stack)))
+  ;; (setq linum-format "%d ")
   (setq show-trailing-whitespace t)
   (setq frame-title-format "Emacs")
   ;; Show the current function name in the header line
@@ -358,6 +351,9 @@ you should place your code here."
 
   ;; Show helm input in the bottom
   (setq helm-echo-input-in-header-line 'nil)
+
+  ;; Projectile enable caching
+  (setq projectile-enable-caching t)
   )
 
 ;; Do not write anything past this comment. This is where Emacs will
@@ -375,4 +371,5 @@ you should place your code here."
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- )
+ '(helm-source-header ((t (:background "#abd7f0" :foreground "black" :weight bold :height 1.1 :family "Courier 10 Pitch"))))
+ '(powerline-active1 ((t (:inherit mode-line :background "grey22" :foreground "white smoke")))))
