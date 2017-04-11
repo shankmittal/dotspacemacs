@@ -30,16 +30,10 @@ values."
    dotspacemacs-configuration-layer-path
    '(
      "~/spacemacs_layers/"
-     )
+    )
    ;; List of configuration layers to load.
    dotspacemacs-configuration-layers
    '(
-     rust
-     markdown
-     go
-     html
-     windows-scripts
-     haskell
      gtags
      c-c++
      ;; ----------------------------------------------------------------
@@ -143,14 +137,15 @@ values."
    ;; List of themes, the first of the list is loaded when spacemacs starts.
    ;; Press <SPC> T n to cycle to the next theme in the list (works great
    ;; with 2 themes variants, one dark and one light)
-   dotspacemacs-themes '(spacemacs-dark
+   dotspacemacs-themes '(default
+                         spacemacs-dark
                          spacemacs-light)
    ;; If non nil the cursor color matches the state color in GUI Emacs.
    dotspacemacs-colorize-cursor-according-to-state t
    ;; Default font, or prioritized list of fonts. `powerline-scale' allows to
    ;; quickly tweak the mode-line size to make separators look not too crappy.
-   dotspacemacs-default-font '("Courier 10 pitch"
-                               :size 14.0
+   dotspacemacs-default-font '("Courier 10 Pitch"
+                               :size 13.0
                                :weight normal
                                :width normal
                                :powerline-scale 1.1)
@@ -220,7 +215,7 @@ values."
    ;; source settings. Else, disable fuzzy matching in all sources.
    ;; (default 'always)
    ;; dotspacemacs-helm-use-fuzzy 'always
-   dotspacemacs-helm-use-fuzzy nil
+   dotspacemacs-helm-use-fuzzy 'source
    ;; If non nil the paste micro-state is enabled. When enabled pressing `p`
    ;; several times cycle between the kill ring content. (default nil)
    dotspacemacs-enable-paste-transient-state nil
@@ -308,21 +303,7 @@ executes.
  This function is mostly useful for variables that need to be set
 before packages are loaded. If you are unsure, you should try in setting them in
 `dotspacemacs/user-config' first."
-  (if (eq system-type 'darwin)
-      (setq-default dotspacemacs-default-font '("Courier"
-                                                :size 14.0
-                                                :weight normal
-                                                :width normal
-                                                :powerline-scale 1.1))
-    (setq-default dotspacemacs-default-font '("Courier 10 pitch"
-                                              :size 14.0
-                                              :weight normal
-                                              :width normal
-                                              :powerline-scale 1.1))
-    )
-  (setq-default    dotspacemacs-themes '(default))
-
-  ;; makefile
+  ;; add makefiles modes
   (add-to-list 'auto-mode-alist '("\\Makefile.*\\'" . makefile-mode))
   (add-to-list 'auto-mode-alist '("\\.*.ebuild\\'" . makefile-mode))
   )
@@ -334,7 +315,7 @@ layers configuration.
 This is the place where most of your configurations should be done. Unless it is
 explicitly specified that a variable should be set before a package is loaded,
 you should place your code here."
-  ;; (setq linum-format "%d ")
+  (setq linum-format "%d ")
   (setq show-trailing-whitespace t)
   (setq frame-title-format "Emacs")
   ;; Show the current function name in the header line
@@ -369,10 +350,9 @@ you should place your code here."
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- '(evil-want-fine-undo t)
  '(package-selected-packages
    (quote
-    (toml-mode racer cargo rust-mode mmm-mode markdown-toc markdown-mode gh-md go-guru go-eldoc go-mode powerline hydra parent-mode projectile pkg-info epl flx smartparens iedit anzu evil goto-chg undo-tree highlight f s diminish bind-map bind-key packed dash helm avy helm-core popup async package-build web-mode tagedit slim-mode scss-mode sass-mode pug-mode less-css-mode helm-css-scss haml-mode emmet-mode powershell intero flycheck hlint-refactor hindent helm-hoogle haskell-snippets yasnippet company-ghci company-ghc ghc company haskell-mode cmm-mode defualt-theme xterm-color smeargle shell-pop orgit org-projectile pcache org-present org org-pomodoro alert log4e gntp org-download multi-term magit-gitflow htmlize helm-gtags helm-gitignore gnuplot gitignore-mode gitconfig-mode gitattributes-mode git-timemachine git-messenger git-link ggtags evil-magit magit magit-popup git-commit with-editor eshell-z eshell-prompt-extras esh-help dts-mode disaster cmake-mode clang-format helm-themes helm-swoop helm-projectile helm-mode-manager helm-flx helm-descbinds helm-ag ace-jump-helm-line ws-butler window-numbering which-key wgrep volatile-highlights vi-tilde-fringe uuidgen use-package toc-org spacemacs-theme spaceline smex restart-emacs request rainbow-delimiters quelpa popwin persp-mode pcre2el paradox org-plus-contrib org-bullets open-junk-file neotree move-text macrostep lorem-ipsum linum-relative link-hint ivy-hydra info+ indent-guide ido-vertical-mode hungry-delete hl-todo highlight-parentheses highlight-numbers highlight-indentation hide-comnt help-fns+ helm-make google-translate golden-ratio flx-ido fill-column-indicator fancy-battery eyebrowse expand-region exec-path-from-shell evil-visualstar evil-visual-mark-mode evil-unimpaired evil-tutor evil-surround evil-search-highlight-persist evil-numbers evil-nerd-commenter evil-mc evil-matchit evil-lisp-state evil-indent-plus evil-iedit-state evil-exchange evil-escape evil-ediff evil-args evil-anzu eval-sexp-fu elisp-slime-nav dumb-jump define-word counsel-projectile column-enforce-mode clean-aindent-mode auto-highlight-symbol auto-compile aggressive-indent adaptive-wrap ace-window ace-link))))
+    (defualt-theme xterm-color smeargle shell-pop orgit org-projectile pcache org-present org org-pomodoro alert log4e gntp org-download multi-term magit-gitflow htmlize helm-gtags helm-gitignore gnuplot gitignore-mode gitconfig-mode gitattributes-mode git-timemachine git-messenger git-link ggtags evil-magit magit magit-popup git-commit with-editor eshell-z eshell-prompt-extras esh-help dts-mode disaster cmake-mode clang-format helm-themes helm-swoop helm-projectile helm-mode-manager helm-flx helm-descbinds helm-ag ace-jump-helm-line ws-butler window-numbering which-key wgrep volatile-highlights vi-tilde-fringe uuidgen use-package toc-org spacemacs-theme spaceline smex restart-emacs request rainbow-delimiters quelpa popwin persp-mode pcre2el paradox org-plus-contrib org-bullets open-junk-file neotree move-text macrostep lorem-ipsum linum-relative link-hint ivy-hydra info+ indent-guide ido-vertical-mode hungry-delete hl-todo highlight-parentheses highlight-numbers highlight-indentation hide-comnt help-fns+ helm-make google-translate golden-ratio flx-ido fill-column-indicator fancy-battery eyebrowse expand-region exec-path-from-shell evil-visualstar evil-visual-mark-mode evil-unimpaired evil-tutor evil-surround evil-search-highlight-persist evil-numbers evil-nerd-commenter evil-mc evil-matchit evil-lisp-state evil-indent-plus evil-iedit-state evil-exchange evil-escape evil-ediff evil-args evil-anzu eval-sexp-fu elisp-slime-nav dumb-jump define-word counsel-projectile column-enforce-mode clean-aindent-mode auto-highlight-symbol auto-compile aggressive-indent adaptive-wrap ace-window ace-link))))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
